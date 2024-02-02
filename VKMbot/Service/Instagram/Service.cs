@@ -10,6 +10,7 @@ public class Service
 {
     public string Token { get; set; }
     public string VideoLink { get; private set; }
+    public bool IsEnter {  get; set; }
 
     public Service(string token)
     {
@@ -63,7 +64,7 @@ public class Service
             var chatMember1 = await botClient.GetChatMemberAsync(channelUsername1, userId);
             var chatMember2 = await botClient.GetChatMemberAsync(channelUsername2, userId);
             Console.WriteLine(chatMember1.Status.ToString());
-            Console.WriteLine(chatMember2.Status.ToString());
+            //Console.WriteLine(chatMember2.Status.ToString());
             Console.WriteLine(ChatMemberStatus.Kicked);
 
             // Agar foydalanuvchi kanalda obuna bo'lsa
@@ -74,7 +75,7 @@ public class Service
                 MessageController messageController = new MessageController();
                 var handler = update.Type switch
                 {
-                    UpdateType.Message => messageController.HandleMessageAsync(botClient, update, cancellationToken),
+                    UpdateType.Message => messageController.HandleMessageAsync(botClient, update, cancellationToken, IsEnter),
                     _ => messageController.OtherMessage(botClient, update, cancellationToken),
                 };
             }

@@ -2,6 +2,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace VKMbot;
 
@@ -9,14 +10,43 @@ public class MessageController
 {
     public string VideoLink { get; set; }
 
-    public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, bool isEnter)
     {
-        Console.WriteLine("HandleMessageAsync");
-        var handler = update.Message.Type switch
+        var message = update.Message;
+        Console.WriteLine($"User Name: {message.Chat.Username}\nYou said: {message.Text}\nData: {DateTime.Now}\n");
+        if (isEnter == true)
         {
-            MessageType.Text => TextAsyncFunction(botClient, update, cancellationToken),
-            _ => OtherMessage(botClient, update, cancellationToken),
-        };
+            Console.WriteLine("HandleMessageAsync");
+            var handler = update.Message.Type switch
+            {
+                MessageType.Text => TextAsyncFunction(botClient, update, cancellationToken),
+                _ => OtherMessage(botClient, update, cancellationToken),
+            };
+        }
+        else
+        {
+            Contact(botClient, update, isEnter).Wait();
+        }
+
+        
+    }
+
+    public static async Task Contact(ITelegramBotClient botClient, Update update, bool isEnter)
+    {
+        Console.WriteLine(isEnter);
+        ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup
+        (
+            KeyboardButton.WithRequestContact("Kontact yuborish uchun tegining")
+        );
+
+        markup.ResizeKeyboard = true;
+        await botClient.SendTextMessageAsync
+        (
+                chatId: update.Message.Chat.Id,
+                text: "Iltimos oldin telefon raqamingizni yuboring!",
+                replyMarkup: markup
+        );
+
     }
 
     private async Task TextAsyncFunction(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)

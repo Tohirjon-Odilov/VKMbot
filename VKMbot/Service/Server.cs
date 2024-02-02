@@ -1,8 +1,10 @@
-﻿using Telegram.Bot;
+﻿using Newtonsoft.Json;
+using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using IO = System.IO;
 
 namespace VKMbot;
 
@@ -10,6 +12,8 @@ public class Server
 {
     public string Token { get; set; }
     public string VideoLink { get; private set; }
+
+    public bool IsEnter { get; set; } = false;
 
     public Server(string token)
     {
@@ -47,6 +51,12 @@ public class Server
     {
         try
         {
+            string jsonFilePath = "../../../Assets/datas.json";
+            var dataList = IO.File.ReadAllText(jsonFilePath);
+
+            List<Contact> list = JsonConvert.DeserializeObject<List<Contact>>(dataList);
+
+
             if (update.Message is not { } message) return;
             if (message.Chat is not { } chat) return;
 
@@ -66,6 +76,33 @@ public class Server
             Console.WriteLine(chatMemberOne.Status.ToString());
             //Console.WriteLine(chatMember2.Status.ToString());
 
+            foreach (var item in list)
+            {
+
+                if (item.UserId == update.Message.Chat.Id)
+                {
+                    IsEnter = true;
+                    break;
+                }
+                else
+                {
+                    IsEnter = false;
+                    if (update.Message.Contact is not null && item.PhoneNumber != update.Message.Contact.PhoneNumber)
+                    {
+                        list.Add(update.Message.Contact);
+
+                        var data = IO.File.ReadAllText(jsonFilePath);
+
+                        using (StreamWriter sw = new StreamWriter(jsonFilePath))
+                        {
+                            sw.WriteLine(JsonConvert.SerializeObject(list, Formatting.Indented));
+                        }
+                        IsEnter = true;
+                        break;
+                    }
+                }
+            }
+
             // Agar foydalanuvchi kanalda obuna bo'lsa
             switch (chatMemberOne.Status)
             {
@@ -76,7 +113,7 @@ public class Server
                     MessageController messageController = new MessageController();
                     var handler = update.Type switch
                     {
-                        UpdateType.Message => messageController.HandleMessageAsync(botClient, update, cancellationToken),
+                        UpdateType.Message => messageController.HandleMessageAsync(botClient, update, cancellationToken, IsEnter),
                         _ => messageController.OtherMessage(botClient, update, cancellationToken),
                     };
                     break;
