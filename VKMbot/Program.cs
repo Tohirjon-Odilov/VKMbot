@@ -1,13 +1,12 @@
-﻿// token =>   6717154729:AAH972TZtseKqSOieDA6XjujMPsdlAnWv9s
-
-using VKMbot;
+﻿using VKMbot;
+// 6827225607:AAHMZ2m1n61NuZq7FBq1dkpklz0jJknsJQk
+var token = "6717154729:AAH972TZtseKqSOieDA6XjujMPsdlAnWv9s"; //=> instagram downloade bot 
+Server server = new Server(token);
 try
 {
-    var TOKEN = "6717154729:AAH972TZtseKqSOieDA6XjujMPsdlAnWv9s";
-    var send = new Service(TOKEN);
-    await send.Run();
+    server.Run().Wait();
 }
-catch(Exception  e){
-    Console.WriteLine(e);
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
 }
-
