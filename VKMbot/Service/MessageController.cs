@@ -15,10 +15,13 @@ public partial class MessageController
     public string VideoLink { get; set; }
     public static Message message { get; set; }
     public static List<long> ADMIN_ID { get; set;} = new List<long>() { 23242343, 3434343434 };
+    public static string FilePath { get; set; }
 
     public MessageController()
     {
         ADMIN_ID = new List<long>() { 1633746526, 5921666026 };
+        var direct = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent;
+        FilePath = Path.Combine(direct.FullName, "Assets", "datas");
     }
     public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, bool isEnter, List<Contact> list)
     {
@@ -190,13 +193,14 @@ public partial class MessageController
         }
         else if (messageText == "User to pdf")
         {
+            //Console.WriteLine(FilePath.FullName);
             IronPdf.License.IsValidLicense("IRONSUITE.SHAHANSHOH819.GMAIL.COM.17684-2C4E16D18D-DGHHMUQ-HK4XMOWKF75W-O4LXWBRK3MOJ-2MQNMVAUBAGG-GVHG64RZWDRP-HFBUCWC7JIEG-UPQ2JMHM5FIO-UPPYQB-TF7FQ66HK2GLUA-DEPLOYMENT.TRIAL-I72N5S.TRIAL.EXPIRES.04.MAR.2024");
-            string text = IO.File.ReadAllText(@"../../../Assets/datas.json");
+            string text = IO.File.ReadAllText(FilePath + ".json"); //c:Assets\datas\.json
             ChromePdfRenderer renderer = new ChromePdfRenderer();
             PdfDocument pdf = renderer.RenderHtmlAsPdf(text);
-            pdf.SaveAs(@"../../../Assets/datas.pdf");
+            pdf.SaveAs(FilePath + ".pdf");
 
-            using (var stream = new FileStream(@"C:\Users\Tohirjon_Odilov\Desktop\Razrabotka\VKMbot\VKMbot\Assets\datas.pdf", FileMode.Open))
+            using (var stream = new FileStream((FilePath + ".pdf"), FileMode.Open))
             {
                 await botClient.SendDocumentAsync(
                     chatId: message.Chat.Id,
