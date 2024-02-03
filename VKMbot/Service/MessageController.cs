@@ -9,15 +9,17 @@ namespace VKMbot;
 public class MessageController
 {
     public string VideoLink { get; set; }
+    public static Message message { get; set; }
+    public static List<long> ADMIN_ID { get; set;}
 
     public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, bool isEnter)
     {
-        var message = update.Message;
+        message = update.Message;
         Console.WriteLine($"User Name: {message.Chat.Username}\nYou said: {message.Text}\nData: {DateTime.Now}\n");
         if (isEnter == true)
         {
             Console.WriteLine("HandleMessageAsync");
-            var handler = update.Message.Type switch
+            var handler = message.Type switch
             {
                 MessageType.Text => TextAsyncFunction(botClient, update, cancellationToken),
                 MessageType.Contact => ContactAsyncFunction(botClient, update, cancellationToken),
@@ -28,8 +30,6 @@ public class MessageController
         {
             Contact(botClient, update, isEnter).Wait();
         }
-
-        
     }
 
     private async Task ContactAsyncFunction(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -38,13 +38,7 @@ public class MessageController
 
         await MyChatAction.Typing(botClient, update, cancellationToken);
 
-        await botClient.SendTextMessageAsync
-        (
-            chatId: message.Chat.Id,
-            text: $"Hush kelibsiz {message.Chat.FirstName}!",
-            replyToMessageId: message.MessageId,
-            replyMarkup: new ReplyKeyboardRemove()
-        );
+        await IsAdminOrUser(botClient, update, cancellationToken);
     }
 
     public static async Task Contact(ITelegramBotClient botClient, Update update, bool isEnter)
@@ -58,9 +52,9 @@ public class MessageController
         markup.ResizeKeyboard = true;
         await botClient.SendTextMessageAsync
         (
-                chatId: update.Message.Chat.Id,
-                text: "Iltimos oldin telefon raqamingizni yuboring!",
-                replyMarkup: markup
+            chatId: message.Chat.Id,
+            text: "Iltimos oldin telefon raqamingizni yuboring!",
+            replyMarkup: markup
         );
 
     }
@@ -92,17 +86,12 @@ public class MessageController
         //return;
         #endregion 
 
+        ADMIN_ID = new List<long>() { 1633746526, 5921666026 };
+
         if (messageText == "/start")
         {
             await MyChatAction.Typing(botClient, update, cancellationToken);
-
-            await botClient.SendTextMessageAsync(
-                chatId: message.Chat.Id,
-                text: $"Xush kelibsiz {message.Chat.Username}!",
-                replyToMessageId: message.MessageId,
-                replyMarkup: new ReplyKeyboardRemove(),
-                cancellationToken: cancellationToken
-            );
+            await IsAdminOrUser(botClient, update, cancellationToken);
         }
         else if (messageText.StartsWith("https://www.instagram.com"))
             try
@@ -192,6 +181,32 @@ public class MessageController
         }
     }
 
+    private async Task IsAdminOrUser(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    {
+        await MyChatAction.Typing(botClient, update, cancellationToken);
+        foreach (var item in ADMIN_ID)
+        {
+            if (message.Chat.Id == item)
+            {
+                await botClient.SendTextMessageAsync(
+                  chatId: message.Chat.Id,
+                  text: $"Salom voy siz admin ekansiz!",
+                  replyToMessageId: message.MessageId, 
+                  replyMarkup: ButtonController.AdminKeyboardMarkup,
+                  cancellationToken: cancellationToken
+                );
+                return;
+            }
+        }
+        await botClient.SendTextMessageAsync
+        (
+            chatId: message.Chat.Id,
+            text: $"Salom {message.Chat.FirstName}.\nTabriklayman, siz muvaffaqiyatli ro'yhatdan o'tdingiz.",
+            replyToMessageId: message.MessageId,
+            replyMarkup: new ReplyKeyboardRemove()
+        );
+    }
+
     public async Task OtherMessage(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         await MyChatAction.Typing(botClient, update, cancellationToken);
@@ -200,6 +215,17 @@ public class MessageController
             chatId: update.Message.Chat.Id,
             text: "Siz boshqa narsa kiritib bug 🐞 chiqaradigan \nkimsalardek harakat qilyapsiz! 😡 \nIltimos instagram link tashlang!!!",
             replyToMessageId: update.Message.MessageId,
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public static async Task EventReSendContact(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    {
+        await botClient.SendTextMessageAsync
+        (
+            chatId: message.Chat.Id,
+            text: $"{message.Chat.FirstName}, siz allaqachon ro'yhatdan o'tgansiz!\n Botdan bemalol foydalanishingiz mumkin.",
+            replyToMessageId: message.MessageId,
             cancellationToken: cancellationToken
         );
     }

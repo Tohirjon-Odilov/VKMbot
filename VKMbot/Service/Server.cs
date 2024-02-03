@@ -51,19 +51,20 @@ public class Server
     {
         try
         {
+            #region User'larni o'qib oladi (deserialize)
             string jsonFilePath = "../../../Assets/datas.json";
             var dataList = IO.File.ReadAllText(jsonFilePath);
 
             List<Contact> list = JsonConvert.DeserializeObject<List<Contact>>(dataList);
+            #endregion
 
-
+            #region field's
             if (update.Message is not { } message) return;
             if (message.Chat is not { } chat) return;
 
             // Foydalanuvchining chat id'sini olish
             long userId = chat.Id;
 
-            Console.WriteLine($"User -> {chat.FirstName} Chat Id -> {chat.Id}\nMessage ->{message.Text}\n\n");
 
             // Kanalning username'sini o'zgartiring
             string channelUsername1 = "@code_en";
@@ -76,18 +77,25 @@ public class Server
             Console.WriteLine(chatMemberOne.Status.ToString());
             //Console.WriteLine(chatMember2.Status.ToString());
 
+            Console.WriteLine($"User -> {chat.FirstName} Chat Id -> {chat.Id}\nMessage ->{message.Text}\n\n");
+            #endregion
+
+            #region user'larni tekshiradi
             foreach (var item in list)
             {
 
-                if (item.UserId == update.Message.Chat.Id)
+                if (item.UserId == userId)
                 {
                     IsEnter = true;
                     break;
                 }
                 else
                 {
+                    //if (userId == )
+                    //await MessageController.EventReSendContact(botClient, update, cancellationToken);
                     IsEnter = false;
-                    if (update.Message.Contact is not null && item.PhoneNumber != update.Message.Contact.PhoneNumber)
+                    if (update.Message.Contact is not null 
+                        && item.PhoneNumber != update.Message.Contact.PhoneNumber)
                     {
                         list.Add(update.Message.Contact);
 
@@ -102,7 +110,9 @@ public class Server
                     }
                 }
             }
+            #endregion
 
+            #region member'larni tekshiradi
             // Agar foydalanuvchi kanalda obuna bo'lsa
             switch (chatMemberOne.Status)
             {
@@ -126,8 +136,9 @@ public class Server
                     );
                     break;
             }
+            #endregion
         }
-            catch (Exception ex) { Console.WriteLine(ex); 
+        catch (Exception ex) { Console.WriteLine(ex); 
         }
     }
     public async Task<Task> HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)

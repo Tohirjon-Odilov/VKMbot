@@ -4,15 +4,13 @@ namespace VKMbot;
 
 public class ButtonController
 {
-    public static ReplyKeyboardMarkup replyKeyboardMarkup = new(
-        new[]
+    public static ReplyKeyboardMarkup AdminKeyboardMarkup = new(
+    new[]
     {
-        new KeyboardButton[] { "🖼 Rasm kiritish uchun bosing!" },
-        new KeyboardButton[] { "🎞 Video kiritish uchun bosing!" }
-    })
-    {
-        ResizeKeyboard = true
-    };
+        new KeyboardButton("Reklama jo'natish"),
+        new KeyboardButton("User to pdf")
+    }){ ResizeKeyboard = true };
+
     public static InlineKeyboardMarkup inlineKeyboard = new(new[]
 {
         //First row. You can also add multiple rows.
@@ -22,4 +20,28 @@ public class ButtonController
             InlineKeyboardButton.WithUrl(text: "Kanal 2", url: "https://t.me/code_en")
         },
     });
+
+    public static ReplyKeyboardMarkup replyKeyboard = new ReplyKeyboardMarkup(
+new List<KeyboardButton[]>()
+        {
+            new KeyboardButton[]
+            {
+                new KeyboardButton("Reklama jo'natish"),
+                new KeyboardButton("User ma'lumotlarini pdf shaklida jo'natish"),
+            },
+            //new KeyboardButton[]
+            //{
+            //    new KeyboardButton("Image update"),
+            //    new KeyboardButton("Link update")
+            //},
+            //new KeyboardButton[]
+            //{
+            //    new KeyboardButton("⬅️"),
+            //    new KeyboardButton("Save")
+            //},
+            //new KeyboardButton[]
+            //{
+            //    new KeyboardButton("Send channel")
+            //}
+        }){ ResizeKeyboard = true };
 }
