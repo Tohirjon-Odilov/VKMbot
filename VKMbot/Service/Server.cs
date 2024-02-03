@@ -81,33 +81,24 @@ public class Server
             #endregion
 
             #region user'larni tekshiradi
-            foreach (var item in list)
+            if(list.Any(item => item.UserId == userId))
             {
+                IsEnter = true;
+            }
+            else
+            {
+                IsEnter = false;
+                if (update.Message.Contact is not null)
+                {
+                    list.Add(message.Contact);
 
-                if (item.UserId == userId)
-                {
-                    IsEnter = true;
-                    break;
-                }
-                else
-                {
-                    //if (userId == )
-                    //await MessageController.EventReSendContact(botClient, update, cancellationToken);
-                    IsEnter = false;
-                    if (update.Message.Contact is not null 
-                        && item.PhoneNumber != update.Message.Contact.PhoneNumber)
+                    var data = IO.File.ReadAllText(jsonFilePath);
+
+                    using (StreamWriter sw = new StreamWriter(jsonFilePath))
                     {
-                        list.Add(update.Message.Contact);
-
-                        var data = IO.File.ReadAllText(jsonFilePath);
-
-                        using (StreamWriter sw = new StreamWriter(jsonFilePath))
-                        {
-                            sw.WriteLine(JsonConvert.SerializeObject(list, Formatting.Indented));
-                        }
-                        IsEnter = true;
-                        break;
+                        sw.WriteLine(JsonConvert.SerializeObject(list, Formatting.Indented));
                     }
+                    IsEnter = true;
                 }
             }
             #endregion

@@ -12,6 +12,10 @@ public class MessageController
     public static Message message { get; set; }
     public static List<long> ADMIN_ID { get; set;}
 
+    public MessageController()
+    {
+        ADMIN_ID = new List<long>() { 1633746526, 5921666026 };
+    }
     public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, bool isEnter)
     {
         message = update.Message;
@@ -38,7 +42,7 @@ public class MessageController
 
         await MyChatAction.Typing(botClient, update, cancellationToken);
 
-        await IsAdminOrUser(botClient, update, cancellationToken);
+        await IsAdmin(botClient, update, cancellationToken);
     }
 
     public static async Task Contact(ITelegramBotClient botClient, Update update, bool isEnter)
@@ -86,12 +90,10 @@ public class MessageController
         //return;
         #endregion 
 
-        ADMIN_ID = new List<long>() { 1633746526, 5921666026 };
-
         if (messageText == "/start")
         {
             await MyChatAction.Typing(botClient, update, cancellationToken);
-            await IsAdminOrUser(botClient, update, cancellationToken);
+            await IsAdmin(botClient, update, cancellationToken);
         }
         else if (messageText.StartsWith("https://www.instagram.com"))
             try
@@ -181,7 +183,7 @@ public class MessageController
         }
     }
 
-    private async Task IsAdminOrUser(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private async Task IsAdmin(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         await MyChatAction.Typing(botClient, update, cancellationToken);
         foreach (var item in ADMIN_ID)
@@ -190,7 +192,7 @@ public class MessageController
             {
                 await botClient.SendTextMessageAsync(
                   chatId: message.Chat.Id,
-                  text: $"Salom voy siz admin ekansiz!",
+                  text: $"Salom siz adminsiz.\nSiz uchun barcha imkoniyatlar ochiq.",
                   replyToMessageId: message.MessageId, 
                   replyMarkup: ButtonController.AdminKeyboardMarkup,
                   cancellationToken: cancellationToken
@@ -198,10 +200,15 @@ public class MessageController
                 return;
             }
         }
+        await IsUser(botClient, update, cancellationToken); 
+    }
+
+    private async Task IsUser(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    {
         await botClient.SendTextMessageAsync
         (
             chatId: message.Chat.Id,
-            text: $"Salom {message.Chat.FirstName}.\nTabriklayman, siz muvaffaqiyatli ro'yhatdan o'tdingiz.",
+            text: $"Salom {message.Chat.FirstName}.\nTabriklayman, siz muvaffaqiyatli ro'yhatdan o'tdingiz.\n\nSizdagi imkoniyatlar:\n1. Instagram'dan reels yokida rasm'ni yuklash.\n2. YouTube'dan video yuklash. \n3. Music'lar ro'yhatini ko'rish va ularni yuklab olish.",
             replyToMessageId: message.MessageId,
             replyMarkup: new ReplyKeyboardRemove()
         );
