@@ -3,6 +3,10 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using IO = System.IO;
+using IronPdf;
+using Telegram.Bot.Types.InputFiles;
+
 
 namespace VKMbot;
 
@@ -184,15 +188,25 @@ public partial class MessageController
                 );
             }
         }
-        //else if (messageText == "User to pdf") 
-        //{
-        //    using IronPdf;
-        //    IronPdf.License.IsValidLicense("bu yerda ironpdf saytidan key olib qo`yib yuboras");
-        //    string text = File.ReadAllText(@"D:\New folder (2)\text.txt");
-        //    ChromePdfRenderer renderer = new ChromePdfRenderer();
-        //    PdfDocument pdf = renderer.RenderHtmlAsPdf(text);
-        //    pdf.SaveAs(@"D:\New folder (2)\textPDF.pdf");
-        //}
+        else if (messageText == "User to pdf")
+        {
+            IronPdf.License.IsValidLicense("IRONSUITE.SHAHANSHOH819.GMAIL.COM.17684-2C4E16D18D-DGHHMUQ-HK4XMOWKF75W-O4LXWBRK3MOJ-2MQNMVAUBAGG-GVHG64RZWDRP-HFBUCWC7JIEG-UPQ2JMHM5FIO-UPPYQB-TF7FQ66HK2GLUA-DEPLOYMENT.TRIAL-I72N5S.TRIAL.EXPIRES.04.MAR.2024");
+            string text = IO.File.ReadAllText(@"../../../Assets/datas.json");
+            ChromePdfRenderer renderer = new ChromePdfRenderer();
+            PdfDocument pdf = renderer.RenderHtmlAsPdf(text);
+            pdf.SaveAs(@"../../../Assets/datas.pdf");
+
+            using (var stream = new FileStream(@"C:\Users\Tohirjon_Odilov\Desktop\Razrabotka\VKMbot\VKMbot\Assets\datas.pdf", FileMode.Open))
+            {
+                await botClient.SendDocumentAsync(
+                    chatId: message.Chat.Id,
+                    document: new InputOnlineFile(stream, fileName: "datas.pdf"),
+                    //document: InputFile.FromStream(stream: stream, fileName: $"All_users.pdf"),
+                    caption: "Foydanaluvchilar ma'lumotlari",
+                    cancellationToken: cancellationToken
+                );
+            }
+        }
         else
         {
             await MyChatAction.Typing(botClient, update, cancellationToken);
