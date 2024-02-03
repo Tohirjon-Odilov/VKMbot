@@ -109,7 +109,6 @@ public class Server
                 case ChatMemberStatus.Administrator:
                 case ChatMemberStatus.Member:
                 case ChatMemberStatus.Creator:
-
                     MessageController messageController = new MessageController();
                     var handler = update.Type switch
                     {

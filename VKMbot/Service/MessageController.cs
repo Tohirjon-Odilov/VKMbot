@@ -20,6 +20,7 @@ public class MessageController
             var handler = update.Message.Type switch
             {
                 MessageType.Text => TextAsyncFunction(botClient, update, cancellationToken),
+                MessageType.Contact => ContactAsyncFunction(botClient, update, cancellationToken),
                 _ => OtherMessage(botClient, update, cancellationToken),
             };
         }
@@ -29,6 +30,21 @@ public class MessageController
         }
 
         
+    }
+
+    private async Task ContactAsyncFunction(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    {
+        var message = update.Message;
+
+        await MyChatAction.Typing(botClient, update, cancellationToken);
+
+        await botClient.SendTextMessageAsync
+        (
+            chatId: message.Chat.Id,
+            text: $"Hush kelibsiz {message.Chat.FirstName}!",
+            replyToMessageId: message.MessageId,
+            replyMarkup: new ReplyKeyboardRemove()
+        );
     }
 
     public static async Task Contact(ITelegramBotClient botClient, Update update, bool isEnter)
@@ -78,7 +94,15 @@ public class MessageController
 
         if (messageText == "/start")
         {
-            Console.WriteLine($"Xush kelibsiz {message.Chat.Username}! Instagram link yuborishingiz mumkin.");
+            await MyChatAction.Typing(botClient, update, cancellationToken);
+
+            await botClient.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: $"Xush kelibsiz {message.Chat.Username}!",
+                replyToMessageId: message.MessageId,
+                replyMarkup: new ReplyKeyboardRemove(),
+                cancellationToken: cancellationToken
+            );
         }
         else if (messageText.StartsWith("https://www.instagram.com"))
             try
