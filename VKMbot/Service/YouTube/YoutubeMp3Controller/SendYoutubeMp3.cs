@@ -1,15 +1,9 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types;
 using Telegram.Bot;
-using Telegram.Bot.Types.InputFiles;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
-namespace InstagramAndYoutube.YoutubeController.YoutubeMp3Controller
+namespace VKMbot
 {
     public static class SendYoutubeMp3
     {
@@ -32,7 +26,7 @@ namespace InstagramAndYoutube.YoutubeController.YoutubeMp3Controller
 
                     await botClient.SendAudioAsync(
                        chatId: update.Message.Chat.Id,
-                       audio: new InputOnlineFile(new MemoryStream(videoContent)),
+                       audio: InputFile.FromStream(new MemoryStream(videoContent)),
                        caption:"title : "+YoutubeMp3Download.title+"\nsize : "+YoutubeMp3Download.size+"\n Seconds : "+YoutubeMp3Download.length,
                        cancellationToken: cancellationToken);
                 }

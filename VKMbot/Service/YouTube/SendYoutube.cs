@@ -3,7 +3,6 @@ using System.Web;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 
 namespace VKMbot
 {
@@ -39,15 +38,12 @@ namespace VKMbot
                 {
                     byte[] videoContent = await response.Content.ReadAsByteArrayAsync();
 
-                    //using (var stream = new FileStream(@"../../../Assets/datas.pdf", FileMode.Open))
-                    //{
-                        await botClient.SendVideoAsync(
+                    await botClient.SendVideoAsync(
                        chatId: update.Message.Chat.Id,
-                       video: new InputOnlineFile(new MemoryStream(videoContent)),
+                       video: InputFile.FromStream(new MemoryStream(videoContent)),
                        caption: "Formati : " + YoutubeVideoDownload.formats[1].qualityLabel + "\ntitle : " + YoutubeVideoDownload.title + "\nSeconds : " + YoutubeVideoDownload.lengthSeconds,
                        supportsStreaming: true,
                        cancellationToken: cancellationToken);
-                    //};
                 }
             }
 

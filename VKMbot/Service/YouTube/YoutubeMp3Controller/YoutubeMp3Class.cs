@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
+﻿using System.Net;
 
-namespace InstagramAndYoutube.YoutubeController.YoutubeMp3Controller
+namespace VKMbot
 {
     public static class YoutubeMp3Class
     {
@@ -21,11 +15,10 @@ namespace InstagramAndYoutube.YoutubeController.YoutubeMp3Controller
                 Method = HttpMethod.Get,
                 RequestUri = new Uri($"https://youtube-mp3-downloader2.p.rapidapi.com/ytmp3/ytmp3/?url={encodedUrl}"),
                 Headers =
-    {
-        { "X-RapidAPI-Key", "16e48dfbd2msh7371fe5e63f3af1p180fe6jsnee0363ed0461" },
-        { "X-RapidAPI-Host", "youtube-mp3-downloader2.p.rapidapi.com" },
-    },
-            };
+            {
+                { "X-RapidAPI-Key", "f927051de5msh33c089150223b61p1e384ajsn0b24f85919fd" },
+                { "X-RapidAPI-Host", "youtube-mp3-downloader2.p.rapidapi.com" },
+            },};
             using (var response = await client.SendAsync(request))
             {
                 foreach (var item in response.Content.Headers)
@@ -37,5 +30,6 @@ namespace InstagramAndYoutube.YoutubeController.YoutubeMp3Controller
                 Console.WriteLine(body);
                 return body;
             }
-        }   }
+        }   
+    }
 }

@@ -4,8 +4,6 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using IO = System.IO;
-using IronPdf;
-using Telegram.Bot.Types.InputFiles;
 
 
 namespace VKMbot;
@@ -106,9 +104,6 @@ public partial class MessageController
             try
             {
                 Console.WriteLine($"Message Type: {message.Type} Username=> {message.Chat.Username} Text => {message.Text} ");
-                //string originalUrl = "https://www.instagram.com/p/C0bXUHTo5HP/?utm_source=ig_web_copy_link";
-                //Console.WriteLine(encodedUrl);
-                //return;
                 Api root = new Api();
 
                 IList<Root> body = JsonConvert.DeserializeObject<IList<Root>>(root.RunApi(messageText).Result)!;
@@ -124,7 +119,7 @@ public partial class MessageController
 
                         await botClient.SendVideoAsync(
                            chatId: chatId,
-                           video: $"{item.url}",
+                           video: InputFile.FromUri(item.url),
                            replyToMessageId: message.MessageId,
                            supportsStreaming: true,
                            cancellationToken: cancellationToken);
@@ -139,7 +134,7 @@ public partial class MessageController
                         await botClient.SendPhotoAsync(
                            chatId: chatId,
                            replyToMessageId: message.MessageId,
-                           photo: $"{item.url}",
+                           photo: InputFile.FromUri(item.url),
                            cancellationToken: cancellationToken);
                     }
                 }
@@ -160,12 +155,16 @@ public partial class MessageController
                 await botClient.SendVideoAsync
                 (
                        chatId: chatId,
-                       video: $"{replasemessage}",
+                       video: InputFile.FromUri(messageText),
                        replyToMessageId: message.MessageId,
                        supportsStreaming: true,
                        cancellationToken: cancellationToken
                 );
             }
+        else if (messageText.StartsWith("https://youtube.com") || messageText.StartsWith("https://youtu.be"))
+        {
+            await SendYoutube.EssentialFunction(botClient, update, cancellationToken);
+        }
         else if (messageText.StartsWith("https://"))
         {
             await MyChatAction.Typing(botClient, update, cancellationToken);
@@ -182,10 +181,15 @@ public partial class MessageController
             foreach (var user in list)
             {
                 await MyChatAction.SendingPicture(botClient, update, cancellationToken);
-                //long id = 1417765739;
+                await botClient.SendTextMessageAsync(
+                    chatId: user.UserId,
+                    text: "https://t.me/Asadulloh_Tojiev",
+                    cancellationToken: cancellationToken
+                );
+
                 await botClient.SendPhotoAsync(
                     chatId: user.UserId,
-                    photo: "https://www.pexels.com/photo/cable-car-in-narrow-old-town-street-19560870/",
+                    photo: InputFile.FromUri("https://www.pexels.com/photo/cable-car-in-narrow-old-town-street-19560870/"),
                     caption: "Reklama",
                     cancellationToken: cancellationToken
                 );
@@ -193,23 +197,20 @@ public partial class MessageController
         }
         else if (messageText == "User to pdf")
         {
-            //Console.WriteLine(FilePath.FullName);
             IronPdf.License.IsValidLicense("IRONSUITE.SHAHANSHOH819.GMAIL.COM.17684-2C4E16D18D-DGHHMUQ-HK4XMOWKF75W-O4LXWBRK3MOJ-2MQNMVAUBAGG-GVHG64RZWDRP-HFBUCWC7JIEG-UPQ2JMHM5FIO-UPPYQB-TF7FQ66HK2GLUA-DEPLOYMENT.TRIAL-I72N5S.TRIAL.EXPIRES.04.MAR.2024");
-            string text = IO.File.ReadAllText(FilePath + ".json"); //c:Assets\datas\.json
+
+            string text = IO.File.ReadAllText(FilePath + ".json");
             ChromePdfRenderer renderer = new ChromePdfRenderer();
             PdfDocument pdf = renderer.RenderHtmlAsPdf(text);
             pdf.SaveAs(FilePath + ".pdf");
 
-            using (var stream = new FileStream((FilePath + ".pdf"), FileMode.Open))
-            {
-                await botClient.SendDocumentAsync(
-                    chatId: message.Chat.Id,
-                    document: new InputOnlineFile(stream, fileName: "datas.pdf"),
-                    //document: InputFile.FromStream(stream: stream, fileName: $"All_users.pdf"),
-                    caption: "Foydanaluvchilar ma'lumotlari",
-                    cancellationToken: cancellationToken
+            await using Stream stream = System.IO.File.OpenRead(FilePath + ".pdf");
+            await botClient.SendDocumentAsync(
+                chatId: message.Chat.Id,
+                document: InputFile.FromStream(stream: stream, fileName: $"datas.pdf"),
+                caption: "Foydanaluvchilar ma'lumotlari"
                 );
-            }
+            stream.Dispose();
         }
         else
         {

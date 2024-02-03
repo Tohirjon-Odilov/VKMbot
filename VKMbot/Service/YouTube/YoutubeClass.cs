@@ -11,7 +11,7 @@
                 RequestUri = new Uri($"https://ytstream-download-youtube-videos.p.rapidapi.com/dl?id={url}"),
                 Headers =
     {
-        { "X-RapidAPI-Key", "16e48dfbd2msh7371fe5e63f3af1p180fe6jsnee0363ed0461" },
+        { "X-RapidAPI-Key", "f927051de5msh33c089150223b61p1e384ajsn0b24f85919fd" },
         { "X-RapidAPI-Host", "ytstream-download-youtube-videos.p.rapidapi.com" },
     },
             };
