@@ -12,6 +12,7 @@ public class Server
 {
     public string Token { get; set; }
     public string VideoLink { get; private set; }
+    public List<Contact> list { get; set; }
 
     public bool IsEnter { get; set; } = false;
 
@@ -55,7 +56,7 @@ public class Server
             string jsonFilePath = "../../../Assets/datas.json";
             var dataList = IO.File.ReadAllText(jsonFilePath);
 
-            List<Contact> list = JsonConvert.DeserializeObject<List<Contact>>(dataList);
+            list = JsonConvert.DeserializeObject<List<Contact>>(dataList);
             #endregion
 
             #region field's
@@ -113,7 +114,7 @@ public class Server
                     MessageController messageController = new MessageController();
                     var handler = update.Type switch
                     {
-                        UpdateType.Message => messageController.HandleMessageAsync(botClient, update, cancellationToken, IsEnter),
+                        UpdateType.Message => messageController.HandleMessageAsync(botClient, update, cancellationToken, IsEnter, list),
                         _ => messageController.OtherMessage(botClient, update, cancellationToken),
                     };
                     break;

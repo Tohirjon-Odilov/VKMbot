@@ -2,15 +2,8 @@
 
 namespace VKMbot;
 
-public class ButtonController
+public partial class ButtonController
 {
-    public static ReplyKeyboardMarkup AdminKeyboardMarkup = new(
-    new[]
-    {
-        new KeyboardButton("Reklama jo'natish"),
-        new KeyboardButton("User to pdf")
-    }){ ResizeKeyboard = true };
-
     public static InlineKeyboardMarkup inlineKeyboard = new(new[]
 {
         //First row. You can also add multiple rows.

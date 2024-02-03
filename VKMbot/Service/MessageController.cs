@@ -6,17 +6,17 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace VKMbot;
 
-public class MessageController
+public partial class MessageController
 {
     public string VideoLink { get; set; }
     public static Message message { get; set; }
-    public static List<long> ADMIN_ID { get; set;}
+    public static List<long> ADMIN_ID { get; set;} = new List<long>() { 23242343, 3434343434 };
 
     public MessageController()
     {
         ADMIN_ID = new List<long>() { 1633746526, 5921666026 };
     }
-    public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, bool isEnter)
+    public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, bool isEnter, List<Contact> list)
     {
         message = update.Message;
         Console.WriteLine($"User Name: {message.Chat.Username}\nYou said: {message.Text}\nData: {DateTime.Now}\n");
@@ -25,7 +25,7 @@ public class MessageController
             Console.WriteLine("HandleMessageAsync");
             var handler = message.Type switch
             {
-                MessageType.Text => TextAsyncFunction(botClient, update, cancellationToken),
+                MessageType.Text => TextAsyncFunction(botClient, update, cancellationToken, list),
                 MessageType.Contact => ContactAsyncFunction(botClient, update, cancellationToken),
                 _ => OtherMessage(botClient, update, cancellationToken),
             };
@@ -42,7 +42,7 @@ public class MessageController
 
         await MyChatAction.Typing(botClient, update, cancellationToken);
 
-        await IsAdmin(botClient, update, cancellationToken);
+        await Admin(botClient, update, cancellationToken);
     }
 
     public static async Task Contact(ITelegramBotClient botClient, Update update, bool isEnter)
@@ -50,7 +50,7 @@ public class MessageController
         Console.WriteLine(isEnter);
         ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup
         (
-            KeyboardButton.WithRequestContact("Kontact yuborish uchun tegining")
+            KeyboardButton.WithRequestContact("Contact yuborish")
         );
 
         markup.ResizeKeyboard = true;
@@ -63,7 +63,7 @@ public class MessageController
 
     }
 
-    private async Task TextAsyncFunction(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private async Task TextAsyncFunction(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, List<Contact> list)
     {
         // user'dan kelayotgan ma'lumot message'ga o'zlashadi aks holda dasturni return dsaturni to'xtadi
         if (update.Message is not { } message)
@@ -93,7 +93,7 @@ public class MessageController
         if (messageText == "/start")
         {
             await MyChatAction.Typing(botClient, update, cancellationToken);
-            await IsAdmin(botClient, update, cancellationToken);
+            await Admin(botClient, update, cancellationToken);
         }
         else if (messageText.StartsWith("https://www.instagram.com"))
             try
@@ -170,6 +170,29 @@ public class MessageController
                 cancellationToken: cancellationToken
             );
         }
+        else if (messageText == "Reklama jo'natish")
+        {
+            foreach (var user in list)
+            {
+                await MyChatAction.SendingPicture(botClient, update, cancellationToken);
+                //long id = 1417765739;
+                await botClient.SendPhotoAsync(
+                    chatId: user.UserId,
+                    photo: "https://www.pexels.com/photo/cable-car-in-narrow-old-town-street-19560870/",
+                    caption: "Reklama",
+                    cancellationToken: cancellationToken
+                );
+            }
+        }
+        //else if (messageText == "User to pdf") 
+        //{
+        //    using IronPdf;
+        //    IronPdf.License.IsValidLicense("bu yerda ironpdf saytidan key olib qo`yib yuboras");
+        //    string text = File.ReadAllText(@"D:\New folder (2)\text.txt");
+        //    ChromePdfRenderer renderer = new ChromePdfRenderer();
+        //    PdfDocument pdf = renderer.RenderHtmlAsPdf(text);
+        //    pdf.SaveAs(@"D:\New folder (2)\textPDF.pdf");
+        //}
         else
         {
             await MyChatAction.Typing(botClient, update, cancellationToken);
@@ -183,27 +206,25 @@ public class MessageController
         }
     }
 
-    private async Task IsAdmin(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private async Task Admin(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         await MyChatAction.Typing(botClient, update, cancellationToken);
-        foreach (var item in ADMIN_ID)
-        {
-            if (message.Chat.Id == item)
-            {
-                await botClient.SendTextMessageAsync(
-                  chatId: message.Chat.Id,
-                  text: $"Salom siz adminsiz.\nSiz uchun barcha imkoniyatlar ochiq.",
-                  replyToMessageId: message.MessageId, 
-                  replyMarkup: ButtonController.AdminKeyboardMarkup,
-                  cancellationToken: cancellationToken
-                );
-                return;
-            }
+        if (ADMIN_ID.Any(item => item == message.Chat.Id)) { 
+            await botClient.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: $"Salom siz adminsiz.\nSiz uchun barcha imkoniyatlar ochiq.",
+                replyToMessageId: message.MessageId, 
+                replyMarkup: ButtonController.AdminKeyboardMarkup,
+                cancellationToken: cancellationToken
+            );
         }
-        await IsUser(botClient, update, cancellationToken); 
+        else
+        {
+            await User(botClient, update, cancellationToken); 
+        }
     }
 
-    private async Task IsUser(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private async Task User(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         await botClient.SendTextMessageAsync
         (
