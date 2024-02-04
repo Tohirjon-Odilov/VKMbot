@@ -11,7 +11,7 @@ namespace VKMbot
     {
         public static async Task SendAllUsers2(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, string FilePath)
         {
-            string JsonToString = System.IO.File.ReadAllText(FilePath + ".json");
+            string JsonToString = System.IO.File.ReadAllText(FilePath + "datas.json");
             var JsonList = JsonConvert.DeserializeObject<List<Contact>>(JsonToString);
             int n = 1;
             
@@ -55,10 +55,10 @@ namespace VKMbot
                       });
                 });
             })
-                .GeneratePdf(FilePath + ".pdf");
+                .GeneratePdf(FilePath + "datas.pdf");
 
 
-            await using Stream stream = System.IO.File.OpenRead(FilePath + ".pdf");
+            await using Stream stream = System.IO.File.OpenRead(FilePath + "datas.pdf");
             await botClient.SendDocumentAsync(
                 chatId: update.Message.Chat.Id,
                 document: InputFile.FromStream(stream: stream, fileName: $"datas.pdf"),

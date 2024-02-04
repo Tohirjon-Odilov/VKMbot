@@ -4,7 +4,6 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
-
 namespace VKMbot;
 
 public partial class MessageController
@@ -14,11 +13,12 @@ public partial class MessageController
     public static List<long> ADMIN_ID { get; set;}
     public static string FilePath { get; set; }
 
+
     public MessageController()
     {
         ADMIN_ID = new List<long>() { 1633746526 };
         var direct = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent;
-        FilePath = Path.Combine(direct.FullName, "Assets", "datas");
+        FilePath = Path.Combine(direct.FullName, "Assets/");
     }
     public async Task HandleMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, bool isEnter, List<Contact> list)
     {
@@ -29,7 +29,7 @@ public partial class MessageController
             Console.WriteLine("HandleMessageAsync");
             var handler = message.Type switch
             {
-                MessageType.Text => TextAsyncFunction(botClient, update, cancellationToken, list),
+                MessageType.Text => TextAsyncFunction(botClient, update, cancellationToken, list, body),
                 MessageType.Contact => ContactAsyncFunction(botClient, update, cancellationToken),
                 _ => OtherMessage(botClient, update, cancellationToken),
             };
@@ -67,7 +67,7 @@ public partial class MessageController
 
     }
 
-    public async Task TextAsyncFunction(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, List<Contact> list)
+    public async Task TextAsyncFunction(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, List<Contact> list, RootMusic musicBody)
     {
         // user'dan kelayotgan ma'lumot message'ga o'zlashadi aks holda dasturni return dsaturni to'xtadi
         if (update.Message is not { } message)
@@ -180,18 +180,18 @@ public partial class MessageController
             foreach (var user in list)
             {
                 await MyChatAction.SendingPicture(botClient, update, cancellationToken);
-                await botClient.SendTextMessageAsync(
-                    chatId: user.UserId,
-                    text: "https://t.me/Asadulloh_Tojiev",
-                    cancellationToken: cancellationToken
-                );
-
-                //await botClient.SendPhotoAsync(
+                //await botClient.SendTextMessageAsync(
                 //    chatId: user.UserId,
-                //    photo: InputFile.FromUri("https://www.pexels.com/photo/cable-car-in-narrow-old-town-street-19560870/"),
-                //    caption: "Reklama",
+                //    text: "https://t.me/Asadulloh_Tojiev",
                 //    cancellationToken: cancellationToken
                 //);
+
+                await botClient.SendPhotoAsync(
+                    chatId: user.UserId,
+                    photo: InputFile.FromUri("https://www.pexels.com/photo/cable-car-in-narrow-old-town-street-19560870/"),
+                    caption: "Reklama",
+                    cancellationToken: cancellationToken
+                );
             }
         }
         else if (messageText == "User to pdf")

@@ -13,8 +13,8 @@ public class Server
     public string Token { get; set; }
     public string VideoLink { get; private set; }
     public List<Contact> list { get; set; }
-
     public bool IsEnter { get; set; } = false;
+    public List<long> BlockList { get; set; } = new List<long>() { 5372384465, 5921666026 };
 
     public Server(string token)
     {
@@ -50,6 +50,18 @@ public class Server
 
     public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
+        //if (update.Message is not { } message) return;
+        //if (BlockList.Any(i => i == message.Chat.Id))
+        //{
+        //    await botClient.SendTextMessageAsync
+        //    (
+        //        chatId: message.Chat.Id,
+        //        text: $"Hurmatli {message.Chat.Username}. Siz ko'p harakat qilganiz uchun bloklandingiz!!!",
+        //        replyToMessageId: message.MessageId,
+        //        cancellationToken: cancellationToken
+        //    );
+        //    return;
+        //}
         try
         {
             #region User'larni o'qib oladi (deserialize)
@@ -58,10 +70,15 @@ public class Server
 
             list = JsonConvert.DeserializeObject<List<Contact>>(dataList);
             #endregion
+            MessageController messageController = new MessageController();
+            if (UpdateType.CallbackQuery == update.Type)
+            {
+                messageController.CatchMusic(botClient, update, cancellationToken);
+                return;
+            }
 
             #region field's
-            if (update.Message is not { } message) return;
-            if (message.Chat is not { } chat) return;
+            if (update.Message.Chat is not { } chat) return;
 
             // Foydalanuvchining chat id'sini olish
             long userId = chat.Id;
@@ -78,7 +95,7 @@ public class Server
             Console.WriteLine(chatMemberOne.Status.ToString());
             //Console.WriteLine(chatMember2.Status.ToString());
 
-            Console.WriteLine($"User -> {chat.FirstName} Chat Id -> {chat.Id}\nMessage ->{message.Text}\n\n");
+            Console.WriteLine($"User -> {chat.FirstName} Chat Id -> {chat.Id}\nMessage ->{update.Message.Text}\n\n");
             #endregion
 
             #region user'larni tekshiradi
@@ -91,7 +108,7 @@ public class Server
                 IsEnter = false;
                 if (update.Message.Contact is not null)
                 {
-                    list.Add(message.Contact);
+                    list.Add(update.Message.Contact);
 
                     var data = IO.File.ReadAllText(jsonFilePath);
 
@@ -103,6 +120,9 @@ public class Server
                 }
             }
             #endregion
+            //MessageController messageController = new MessageController();
+            //if (UpdateType.CallbackQuery == update.Type)
+            //    messageController.CatchMusic(botClient, update, cancellationToken);
 
             #region member'larni tekshiradi
             // Agar foydalanuvchi kanalda obuna bo'lsa
@@ -111,11 +131,10 @@ public class Server
                 case ChatMemberStatus.Administrator:
                 case ChatMemberStatus.Member:
                 case ChatMemberStatus.Creator:
-                    MessageController messageController = new MessageController();
                     var handler = update.Type switch
                     {
                         UpdateType.Message => messageController.HandleMessageAsync(botClient, update, cancellationToken, IsEnter, list),
-                        UpdateType.CallbackQuery => messageController.CatchMusic(botClient, update, cancellationToken), 
+                        //UpdateType.CallbackQuery => messageController.CatchMusic(botClient, update, cancellationToken), 
                         _ => messageController.OtherMessage(botClient, update, cancellationToken),
                     };
                     break;
