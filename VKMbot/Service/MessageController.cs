@@ -3,7 +3,6 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
-using IO = System.IO;
 
 
 namespace VKMbot;
@@ -12,12 +11,12 @@ public partial class MessageController
 {
     public string VideoLink { get; set; }
     public static Message message { get; set; }
-    public static List<long> ADMIN_ID { get; set;} = new List<long>() { 23242343, 3434343434 };
+    public static List<long> ADMIN_ID { get; set;}
     public static string FilePath { get; set; }
 
     public MessageController()
     {
-        ADMIN_ID = new List<long>() { 1633746526, 5921666026 };
+        ADMIN_ID = new List<long>() { 1633746526 };
         var direct = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent;
         FilePath = Path.Combine(direct.FullName, "Assets", "datas");
     }
@@ -68,7 +67,7 @@ public partial class MessageController
 
     }
 
-    private async Task TextAsyncFunction(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, List<Contact> list)
+    public async Task TextAsyncFunction(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, List<Contact> list)
     {
         // user'dan kelayotgan ma'lumot message'ga o'zlashadi aks holda dasturni return dsaturni to'xtadi
         if (update.Message is not { } message)
@@ -187,43 +186,65 @@ public partial class MessageController
                     cancellationToken: cancellationToken
                 );
 
-                await botClient.SendPhotoAsync(
-                    chatId: user.UserId,
-                    photo: InputFile.FromUri("https://www.pexels.com/photo/cable-car-in-narrow-old-town-street-19560870/"),
-                    caption: "Reklama",
-                    cancellationToken: cancellationToken
-                );
+                //await botClient.SendPhotoAsync(
+                //    chatId: user.UserId,
+                //    photo: InputFile.FromUri("https://www.pexels.com/photo/cable-car-in-narrow-old-town-street-19560870/"),
+                //    caption: "Reklama",
+                //    cancellationToken: cancellationToken
+                //);
             }
         }
         else if (messageText == "User to pdf")
         {
-            IronPdf.License.IsValidLicense("IRONSUITE.SHAHANSHOH819.GMAIL.COM.17684-2C4E16D18D-DGHHMUQ-HK4XMOWKF75W-O4LXWBRK3MOJ-2MQNMVAUBAGG-GVHG64RZWDRP-HFBUCWC7JIEG-UPQ2JMHM5FIO-UPPYQB-TF7FQ66HK2GLUA-DEPLOYMENT.TRIAL-I72N5S.TRIAL.EXPIRES.04.MAR.2024");
+            await SendPdf.SendAllUsers2(botClient, update, cancellationToken, FilePath);
+            //IronPdf.License.IsValidLicense("IRONSUITE.SHAHANSHOH819.GMAIL.COM.17684-2C4E16D18D-DGHHMUQ-HK4XMOWKF75W-O4LXWBRK3MOJ-2MQNMVAUBAGG-GVHG64RZWDRP-HFBUCWC7JIEG-UPQ2JMHM5FIO-UPPYQB-TF7FQ66HK2GLUA-DEPLOYMENT.TRIAL-I72N5S.TRIAL.EXPIRES.04.MAR.2024");
 
-            string text = IO.File.ReadAllText(FilePath + ".json");
-            ChromePdfRenderer renderer = new ChromePdfRenderer();
-            PdfDocument pdf = renderer.RenderHtmlAsPdf(text);
-            pdf.SaveAs(FilePath + ".pdf");
+            //string text = IO.File.ReadAllText(FilePath + ".json");
+            //ChromePdfRenderer renderer = new ChromePdfRenderer();
+            //PdfDocument pdf = renderer.RenderHtmlAsPdf(text);
+            //pdf.SaveAs(FilePath + ".pdf");
 
-            await using Stream stream = System.IO.File.OpenRead(FilePath + ".pdf");
-            await botClient.SendDocumentAsync(
-                chatId: message.Chat.Id,
-                document: InputFile.FromStream(stream: stream, fileName: $"datas.pdf"),
-                caption: "Foydanaluvchilar ma'lumotlari"
-                );
-            stream.Dispose();
+            //await using Stream stream = System.IO.File.OpenRead(FilePath + ".pdf");
+            //await botClient.SendDocumentAsync(
+            //    chatId: message.Chat.Id,
+            //    document: InputFile.FromStream(stream: stream, fileName: $"datas.pdf"),
+            //    caption: "Foydanaluvchilar ma'lumotlari"
+            //    );
+            //stream.Dispose();
         }
-        else
-        {
+        else if (messageText.StartsWith("https://")) 
+        { 
             await MyChatAction.Typing(botClient, update, cancellationToken);
 
             await botClient.SendTextMessageAsync(
                 chatId: message.Chat.Id,
-                text: "Siz boshqa narsa kiritishga harakat qilyapsiz bloklanasiz!",
+                text: "Siz yaroqsiz link tashladingiz bloklanasiz!",
                 replyToMessageId: message.MessageId,
                 cancellationToken: cancellationToken
             );
         }
-    }
+        else
+        {
+            await SendMusic(botClient, update, cancellationToken, messageText);
+            //RootMusic body = JsonConvert.DeserializeObject<RootMusic>(ApiMusic.Run(messageText, 1, 1).Result);
+
+            //await MyChatAction.Uploading(botClient, update, cancellationToken);
+
+            //using (HttpClient client = new HttpClient())
+            //{
+            //    HttpResponseMessage response = await client.GetAsync(body.tracks.hits[0].track.hub.actions[1].uri);
+            //    if (response.IsSuccessStatusCode)
+            //    {
+            //        byte[] videoContent = await response.Content.ReadAsByteArrayAsync();
+
+            //        await botClient.SendAudioAsync(
+            //           chatId: update.Message.Chat.Id,
+            //           audio: InputFile.FromStream(new MemoryStream(videoContent)),
+            //           cancellationToken: cancellationToken);
+            //    }
+            //}
+        }
+            }
 
     private async Task Admin(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
@@ -256,6 +277,15 @@ public partial class MessageController
 
     public async Task OtherMessage(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
+        //if(update.CallbackQuery.Data != null)
+        //{
+        //    int index = Convert.ToInt16(update.CallbackQuery.Data);
+        //    await CatchMusic(botClient, update, cancellationToken, index);
+        //    //await botClient.SendTextMessageAsync(
+        //    //     chatId: update.CallbackQuery.From.Id,
+        //    //     text: $"{a}",
+        //    //     cancellationToken: cancellationToken);
+        //}
         await MyChatAction.Typing(botClient, update, cancellationToken);
 
         await botClient.SendTextMessageAsync(
@@ -276,4 +306,5 @@ public partial class MessageController
             cancellationToken: cancellationToken
         );
     }
+
 }

@@ -115,6 +115,7 @@ public class Server
                     var handler = update.Type switch
                     {
                         UpdateType.Message => messageController.HandleMessageAsync(botClient, update, cancellationToken, IsEnter, list),
+                        UpdateType.CallbackQuery => messageController.CatchMusic(botClient, update, cancellationToken), 
                         _ => messageController.OtherMessage(botClient, update, cancellationToken),
                     };
                     break;

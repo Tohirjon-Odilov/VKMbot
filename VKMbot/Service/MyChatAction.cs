@@ -32,4 +32,13 @@ public class MyChatAction
             cancellationToken: cancellationToken
         );
     }
+
+    internal static async Task SendingVideo(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    {
+        await botClient.SendChatActionAsync(
+            chatId: update.Message.Chat.Id,
+            chatAction: ChatAction.UploadVideo,
+            cancellationToken: cancellationToken
+        );
+    }
 }

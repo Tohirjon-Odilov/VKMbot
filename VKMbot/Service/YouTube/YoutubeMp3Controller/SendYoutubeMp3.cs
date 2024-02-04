@@ -10,7 +10,7 @@ namespace VKMbot
         public static async Task EssentialFunction(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             string linkY = update.Message.Text;
-            RootYoutubeMp3 YoutubeMp3Download = JsonConvert.DeserializeObject<RootYoutubeMp3>(YoutubeMp3Class.RunApi(linkY).Result);
+            RootYoutubeMp3 YoutubeMp3Download =  JsonConvert.DeserializeObject<RootYoutubeMp3>(YoutubeMp3Class.RunApi(linkY).Result);
 
             await botClient.SendChatActionAsync(
                 chatId: update.Message.Chat.Id,
@@ -30,9 +30,7 @@ namespace VKMbot
                        caption:"title : "+YoutubeMp3Download.title+"\nsize : "+YoutubeMp3Download.size+"\n Seconds : "+YoutubeMp3Download.length,
                        cancellationToken: cancellationToken);
                 }
-            }
-
-                    
+            }    
         }
     }
 }

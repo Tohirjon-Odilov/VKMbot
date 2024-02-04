@@ -1,6 +1,8 @@
-﻿using VKMbot;
+﻿using QuestPDF.Infrastructure;
+using VKMbot;
 // 6827225607:AAHMZ2m1n61NuZq7FBq1dkpklz0jJknsJQk
 
+QuestPDF.Settings.License = LicenseType.Community;
 var TOKEN = "6717154729:AAH972TZtseKqSOieDA6XjujMPsdlAnWv9s"; //=> instagram downloade bot 
 Server server = new Server(TOKEN);
 try

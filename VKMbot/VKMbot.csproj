@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="IronPdf" Version="2024.2.2" />
+    <PackageReference Include="QuestPDF" Version="2023.12.4" />
     <PackageReference Include="Twilio" Version="6.16.1" />
   </ItemGroup>
 	<ItemGroup>
