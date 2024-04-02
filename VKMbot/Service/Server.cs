@@ -11,10 +11,11 @@ namespace VKMbot;
 public class Server
 {
     public string Token { get; set; }
-    public string VideoLink { get; private set; }
-    public List<Contact> list { get; set; }
+    public List<Contact> list { get; set; } = new List<Contact>();
     public bool IsEnter { get; set; } = false;
-    public List<long> BlockList { get; set; } = new List<long>() { 5372384465, 5921666026 };
+    public List<long> BlockList { get; set; } = new List<long>() { 5372384465, 5921666026, 5569322769 };
+    public List<long> AdminList { get; set; } = new List<long>();
+    public byte Status { get; set; }
 
     public Server(string token)
     {
@@ -50,42 +51,33 @@ public class Server
 
     public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        //if (update.Message is not { } message) return;
-        //if (BlockList.Any(i => i == message.Chat.Id))
-        //{
-        //    await botClient.SendTextMessageAsync
-        //    (
-        //        chatId: message.Chat.Id,
-        //        text: $"Hurmatli {message.Chat.Username}. Siz ko'p harakat qilganiz uchun bloklandingiz!!!",
-        //        replyToMessageId: message.MessageId,
-        //        cancellationToken: cancellationToken
-        //    );
-        //    return;
-        //}
         try
         {
             #region User'larni o'qib oladi (deserialize)
             string jsonFilePath = "../../../Assets/datas.json";
             var dataList = IO.File.ReadAllText(jsonFilePath);
 
-            list = JsonConvert.DeserializeObject<List<Contact>>(dataList);
+            list = JsonConvert.DeserializeObject<List<Contact>>(dataList)!;
+
             #endregion
+            #region callback query shu yerga kelib tushadi
             MessageController messageController = new MessageController();
             if (UpdateType.CallbackQuery == update.Type)
             {
-                messageController.CatchMusic(botClient, update, cancellationToken);
+                await messageController.CatchMusic(botClient, update, cancellationToken);
                 return;
             }
-
+            #endregion
             #region field's
             if (update.Message.Chat is not { } chat) return;
+
+            if (update.Message is not { } message) return;
 
             // Foydalanuvchining chat id'sini olish
             long userId = chat.Id;
 
-
             // Kanalning username'sini o'zgartiring
-            string channelUsername1 = "@code_en";
+            string channelUsername1 = "@dotnet_resourse";
             //string channelUsername2 = "@muhammadabdulloh_uz";
 
             // Foydalanuvchini tekshirish
@@ -97,20 +89,30 @@ public class Server
 
             Console.WriteLine($"User -> {chat.FirstName} Chat Id -> {chat.Id}\nMessage ->{update.Message.Text}\n\n");
             #endregion
+            #region blacklist
+            if (BlockList.Exists(i => i == message.Chat.Id))
+            {
+                await botClient.SendTextMessageAsync
+                (
+                    chatId: message.Chat.Id,
+                    text: $"Hurmatli {message.Chat.Username}. Siz ko'p harakat qilganiz uchun bloklandingiz!!!",
+                    replyToMessageId: message.MessageId,
+                    cancellationToken: cancellationToken
+                );
+                return;
+            }
 
+            #endregion
             #region user'larni tekshiradi
-            if(list.Any(item => item.UserId == userId))
+            if (list.Exists(item => item.UserId == userId))
             {
                 IsEnter = true;
-            }
-            else
+            } else
             {
                 IsEnter = false;
                 if (update.Message.Contact is not null)
                 {
                     list.Add(update.Message.Contact);
-
-                    var data = IO.File.ReadAllText(jsonFilePath);
 
                     using (StreamWriter sw = new StreamWriter(jsonFilePath))
                     {
@@ -120,22 +122,19 @@ public class Server
                 }
             }
             #endregion
-            //MessageController messageController = new MessageController();
-            //if (UpdateType.CallbackQuery == update.Type)
-            //    messageController.CatchMusic(botClient, update, cancellationToken);
 
             #region member'larni tekshiradi
-            // Agar foydalanuvchi kanalda obuna bo'lsa
+            // Agar foydalanuvchi kanalda obuna bo'lsa shunda'gina ushbu qism ishlaydi.
             switch (chatMemberOne.Status)
             {
                 case ChatMemberStatus.Administrator:
                 case ChatMemberStatus.Member:
                 case ChatMemberStatus.Creator:
-                    var handler = update.Type switch
+                    Status = update.Type switch
                     {
-                        UpdateType.Message => messageController.HandleMessageAsync(botClient, update, cancellationToken, IsEnter, list),
+                        UpdateType.Message => await messageController.HandleMessageAsync(botClient, update, cancellationToken, IsEnter, list, Status),
                         //UpdateType.CallbackQuery => messageController.CatchMusic(botClient, update, cancellationToken), 
-                        _ => messageController.OtherMessage(botClient, update, cancellationToken),
+                        _ => await messageController.OtherMessage(botClient, update, cancellationToken),
                     };
                     break;
 
@@ -149,20 +148,22 @@ public class Server
                     break;
             }
             #endregion
-        }
-        catch (Exception ex) { Console.WriteLine(ex); 
+        } catch (Exception ex)
+        {
+            Console.WriteLine(ex);
         }
     }
-    public async Task<Task> HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+    public async Task<Task> HandlePollingErrorAsync(
+        ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
+
         var ErrorMessage = exception switch
         {
             ApiRequestException apiRequestException
                 => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
             _ => exception.ToString()
         };
-
-        Console.WriteLine(ErrorMessage);
+        await Console.Out.WriteLineAsync(ErrorMessage);
         return Task.CompletedTask;
     }
 }

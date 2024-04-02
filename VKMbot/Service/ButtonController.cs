@@ -21,20 +21,6 @@ new List<KeyboardButton[]>()
             {
                 new KeyboardButton("Reklama jo'natish"),
                 new KeyboardButton("User ma'lumotlarini pdf shaklida jo'natish"),
-            },
-            //new KeyboardButton[]
-            //{
-            //    new KeyboardButton("Image update"),
-            //    new KeyboardButton("Link update")
-            //},
-            //new KeyboardButton[]
-            //{
-            //    new KeyboardButton("⬅️"),
-            //    new KeyboardButton("Save")
-            //},
-            //new KeyboardButton[]
-            //{
-            //    new KeyboardButton("Send channel")
-            //}
+            }
         }){ ResizeKeyboard = true };
 }
